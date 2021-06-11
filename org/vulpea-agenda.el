@@ -4,6 +4,8 @@
 
 ;;; Code:
 
+(eval-when-compile 'org-macs)
+
 (defun vulpea-project-p ()
   "Return non-nil if current buffer has any todo entry.
 
@@ -50,6 +52,11 @@ If the property is already set, replace its value."
             (forward-line)
             (beginning-of-line)))
         (insert "#+" name ": " value "\n")))))
+
+(defun vulpea-buffer-title-set (title)
+  "Set TITLE in current buffer.
+If the title is already set, replace its value."
+  (vulpea-buffer-prop-set "title" title))
 
 (defun vulpea-buffer-prop-get (name)
   "Get a buffer property called NAME as a string."
