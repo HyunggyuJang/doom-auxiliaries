@@ -4,8 +4,6 @@
 
 ;;; Code:
 
-(declare-function org-depend-block-todo "org-depend" (change-plist))
-
 (defun vulpea-project-p ()
   "Return non-nil if current buffer has any todo entry.
 
@@ -46,7 +44,7 @@ tasks."
          (combine-and-quote-strings tags))))))
 
 (defvar vulpea-exclude-files-regexp
-  "\\(^archive\\.org$\\|^old\\.org$\\|^gcal\\.org$\\)"
+  "\\(^archive\\.org$\\|^old\\.org$\\)"
   "Exclude files from vulpea realm.")
 
 (defun vulpea-buffer-p ()
