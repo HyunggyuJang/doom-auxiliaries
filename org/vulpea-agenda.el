@@ -28,20 +28,66 @@ tasks."
                        :to 'done)))))
     nil 'first-match))
 
+(defun vulpea-buffer-tags-set (&rest tags)
+  "Set TAGS in current buffer.
+If filetags value is already set, replace it."
+  (vulpea-buffer-prop-set "filetags" (string-join tags " ")))
+(defun vulpea-buffer-prop-set (name value)
+  "Set a file property called NAME to VALUE in buffer file.
+If the property is already set, replace its value."
+  (setq name (downcase name))
+  (org-with-point-at 1
+    (let ((case-fold-search t))
+      (if (re-search-forward (concat "^#\\+" name ":\\(.*\\)")
+                             (point-max) t)
+          (replace-match (concat "#+" name ": " value) 'fixedcase)
+        (while (and (not (eobp))
+                    (looking-at "^[#:]"))
+          (if (save-excursion (end-of-line) (eobp))
+              (progn
+                (end-of-line)
+                (insert "\n"))
+            (forward-line)
+            (beginning-of-line)))
+        (insert "#+" name ": " value "\n")))))
+
+(defun vulpea-buffer-prop-get (name)
+  "Get a buffer property called NAME as a string."
+  (org-with-point-at 1
+    (when (re-search-forward (concat "^#\\+" name ": \\(.*\\)")
+                             (point-max) t)
+      (let ((value (string-trim
+                    (buffer-substring-no-properties
+                     (match-beginning 1)
+                     (match-end 1)))))
+        (unless (string-empty-p value)
+          value)))))
+
+(defun vulpea-buffer-prop-get-list (name &optional separators)
+  "Get a buffer property NAME as a list using SEPARATORS.
+If SEPARATORS is non-nil, it should be a regular expression
+matching text that separates, but is not part of, the substrings.
+If nil it defaults to `split-string-default-separators', normally
+\"[ \f\t\n\r\v]+\", and OMIT-NULLS is forced to t."
+  (let ((value (vulpea-buffer-prop-get name)))
+    (when value
+      (split-string-and-unquote value separators))))
+
+(defun vulpea-buffer-tags-get ()
+  "Return filetags value in current buffer."
+  (vulpea-buffer-prop-get-list "filetags" " "))
+
 (defun vulpea-project-update-tag ()
   "Update PROJECT tag in the current buffer."
   (when (and (not (active-minibuffer-window))
              (vulpea-buffer-p))
-    (let* ((file (buffer-file-name (buffer-base-buffer)))
-           (prop-tags (org-roam--extract-tags-prop file))
+    (let* ((prop-tags (vulpea-buffer-tags-get))
            (tags prop-tags))
       (if (vulpea-project-p)
-          (setq tags (add-to-list 'tags "Project"))
-        (setq tags (remove "Project" tags)))
+          (setq tags (add-to-list 'tags "project"))
+        (setq tags (remove "project" tags)))
       (unless (eq prop-tags tags)
-        (org-roam--set-global-prop
-         "ROAM_TAGS"
-         (combine-and-quote-strings tags))))))
+        (apply #'vulpea-buffer-tags-set tags)))))
 
 (defvar vulpea-exclude-files-regexp
   "\\(^archive\\.org$\\|^old\\.org$\\)"
@@ -56,13 +102,16 @@ tasks."
         (file-name-directory buffer-file-name))))
 
 (defun vulpea-project-files ()
-  "Return a list of note files containing Project tag."
-  (seq-map
-   #'car
-   (org-roam-db-query
-    [:select file
-     :from tags
-     :where (like tags (quote "%\"Project\"%"))])))
+  "Return a list of note files containing 'project' tag." ;
+  (seq-uniq
+   (seq-map
+    #'car
+    (org-roam-db-query
+     [:select [nodes:file]
+      :from tags
+      :left-join nodes
+      :on (= tags:node-id nodes:id)
+      :where (like tag (quote "%\"project\"%"))]))))
 
 (defun vulpea-agenda-files-update (&rest _)
   "Update the value of `org-agenda-files'."
@@ -91,7 +140,7 @@ Refer to `org-agenda-prefix-format' for more information."
   (let* ((file-name (when buffer-file-name
                       (file-name-sans-extension
                        (file-name-nondirectory buffer-file-name))))
-         (title (car-safe (org-roam--extract-titles-title)))
+         (title (vulpea-buffer-prop-get "title"))
          (category (org-get-category))
          (result
           (or (if (and
