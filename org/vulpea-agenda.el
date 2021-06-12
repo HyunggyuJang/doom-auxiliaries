@@ -1,10 +1,11 @@
-;;; vulpea-agenda -- Summary
+;;; vulpea-agenda -- Summary -*- lexical-binding: t; -*-
 ;;; Commentary:
 ;;; Dynamic agenda file manager.
 
 ;;; Code:
 
-(eval-when-compile 'org-macs)
+(require 'org-element)
+(require 'seq)
 
 (defun vulpea-project-p ()
   "Return non-nil if current buffer has any todo entry.
@@ -91,7 +92,7 @@ If nil it defaults to `split-string-default-separators', normally
     (let* ((prop-tags (vulpea-buffer-tags-get))
            (tags prop-tags))
       (if (vulpea-project-p)
-          (setq tags (add-to-list 'tags "project"))
+          (setq tags (cl-pushnew "project" tags :test #'equal))
         (setq tags (remove "project" tags)))
       (unless (eq prop-tags tags)
         (apply #'vulpea-buffer-tags-set tags)))))
