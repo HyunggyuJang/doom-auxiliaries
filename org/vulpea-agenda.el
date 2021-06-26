@@ -93,12 +93,12 @@ If nil it defaults to `split-string-default-separators', normally
            (tags prop-tags))
       (if (vulpea-project-p)
           (setq tags (cl-pushnew "project" tags :test #'equal))
-        (setq tags (remove "project" tags)))
+        (setq tags (delete "project" tags)))
       (unless (eq prop-tags tags)
         (apply #'vulpea-buffer-tags-set tags)))))
 
 (defvar vulpea-exclude-files-regexp
-  "\\(^archive\\.org$\\|^old\\.org$\\)"
+  (regexp-opt (list "archive.org" "old.org"))
   "Exclude files from vulpea realm.")
 
 (defun vulpea-buffer-p ()
@@ -119,7 +119,7 @@ If nil it defaults to `split-string-default-separators', normally
       :from tags
       :left-join nodes
       :on (= tags:node-id nodes:id)
-      :where (like tag (quote "%\"project\"%"))]))))
+      :where (or (= tag "project") (= tag "clocked"))]))))
 
 (defun vulpea-agenda-files-update (&rest _)
   "Update the value of `org-agenda-files'."
