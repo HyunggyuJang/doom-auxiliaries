@@ -93,7 +93,7 @@ If nil it defaults to `split-string-default-separators', normally
            (tags prop-tags))
       (if (vulpea-project-p)
           (setq tags (cl-pushnew "project" tags :test #'equal))
-        (setq tags (remove "project" tags)))
+        (setq tags (cl-remove "project" tags :test #'equal)))
       (unless (eq prop-tags tags)
         (apply #'vulpea-buffer-tags-set tags)))))
 
