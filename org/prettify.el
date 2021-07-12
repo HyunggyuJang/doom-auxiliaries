@@ -10,9 +10,6 @@
 (setcar org-emphasis-regexp-components "-[:space:]('\"{\u200B")
 (setcar (nthcdr 1 org-emphasis-regexp-components)  "-[:space:].,:!?;'\")}\\[\u200B")
 (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
-;; Auxiliarly functions
-(defun hgj/org-zw-as-word ()
-  (modify-syntax-entry ?\u200B "w"))
 
 ;;;###autoload
 (defun hgj/org-emphasize (&optional char)
