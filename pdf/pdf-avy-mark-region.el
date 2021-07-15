@@ -13,8 +13,8 @@ reading links."
   :group 'pdf-links
   :type '(restricted-sexp :match-alternatives
                           ((lambda (x) (and (numberp x)
-                                            (<= x 1)
-                                            (>= x 0))))))
+                                       (<= x 1)
+                                       (>= x 0))))))
 
 (defun pdf-links-read-char-action (query prompt)
   "Using PROMPT, interactively read a link-action.
@@ -37,14 +37,14 @@ See `pdf-links-action-perform' for the interface."
                 :foreground (car colors)
                 :background "blue"
                 :formats
-                 `((?c . ,(lambda (_edges) (pop key-strings)))
-                   (?P . ,(number-to-string
-                           (max 1 (* (cdr size)
-                                     pdf-links-convert-pointsize-scale)))))
-                 :commands pdf-links-read-link-convert-commands
-                 :apply (pdf-util-scale-relative-to-pixel
-                         (mapcar (lambda (l) (car (cdr (assq 'edges l))))
-                                 links)))))
+                `((?c . ,(lambda (_edges) (pop key-strings)))
+                  (?P . ,(number-to-string
+                          (max 1 (* (cdr size)
+                                    pdf-links-convert-pointsize-scale)))))
+                :commands pdf-links-read-link-convert-commands
+                :apply (pdf-util-scale-relative-to-pixel
+                        (mapcar (lambda (l) (car (cdr (assq 'edges l))))
+                                links)))))
     (print colors)
 
     (unless links
@@ -98,7 +98,7 @@ See `pdf-links-action-perform' for the interface."
          (coords (list (or (pdf-links-read-char-action query "Please specify (SPC scrolls): ")
                            (error "No char selected")))))
     ;; (print coords)
-  ;; (print (car (alist-get 'edges (car coords))))))
+    ;; (print (car (alist-get 'edges (car coords))))))
     (car (alist-get 'edges (car coords)))))
 
 (defun pdf-view-mark-region-with-keyboard ()
